@@ -8,6 +8,7 @@ import { ProductsModule } from './modules/products/products.module';
 import { ShopsModule } from './modules/shops/shops.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { UsersResolver } from './modules/users/users.resolver';
 
 @Module({
   imports: [
@@ -17,8 +18,9 @@ import { UsersModule } from './modules/users/users.module';
       playground: false,
       autoSchemaFile: true,
       sortSchema: true,
+      context: ({ req, res }) => ({ req, res }),
       plugins: [ApolloServerPluginLandingPageGraphQLPlayground],
-      include: [ProductsModule, AuthModule],
+      include: [AuthModule, UsersResolver, ProductsModule, ShopsModule],
     }),
     ProductsModule,
     ShopsModule,

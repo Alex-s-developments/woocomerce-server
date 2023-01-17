@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger/dist';
 import { AuthService } from './auth.service';
 import { AuthenticatedDto } from './dto/authenticated.dto';
@@ -12,7 +12,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post()
-  login(@Body() body: LoginDto): Promise<AuthenticatedDto> {
-    return this.authService.login(body);
+  login(@Body() body: LoginDto, @Request() req): Promise<AuthenticatedDto> {
+    return this.authService.login(req.user);
   }
 }

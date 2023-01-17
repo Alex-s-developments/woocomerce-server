@@ -3,6 +3,8 @@ import { ProductOptionEntity } from 'src/modules/products/entities/product-optio
 import { ProductSkuValueEntity } from 'src/modules/products/entities/product-sku-value.entity';
 import { ProductSkuEntity } from 'src/modules/products/entities/product-sku.entity';
 import { ProductEntity } from 'src/modules/products/entities/product.entity';
+import { ShopEntity } from 'src/modules/shops/entities/shop.entity';
+import { UserEntity } from 'src/modules/users/entities/user.entity';
 import { DataSource } from 'typeorm';
 import {
   DB_TYPE,
@@ -26,6 +28,8 @@ export const databaseProviders = [
         password: DB_PASS,
         database: DB_NAME,
         entities: [
+          UserEntity,
+          ShopEntity,
           ProductEntity,
           ProductOptionEntity,
           ProductOptionValueEntity,

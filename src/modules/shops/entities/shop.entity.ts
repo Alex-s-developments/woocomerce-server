@@ -1,16 +1,11 @@
-import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
-import { IShop } from '../interfaces/Shop';
+import { ObjectType, Field } from '@nestjs/graphql';
+import { BaseEntity } from 'src/shared/entities/base.entity';
+import { Entity } from 'typeorm';
+import { IShop } from '../interfaces/shop.interface';
 
-@ObjectType()
-export class Shop implements IShop {
-  @Field(() => ID)
-  id: number;
+@Entity('shop')
+@ObjectType('Shop')
+export class ShopEntity extends BaseEntity implements IShop {
   @Field(() => String)
   name: string;
-  @Field(() => Date)
-  createdAt: Date;
-  @Field(() => Date)
-  updatedAt: Date;
-  @Field(() => Date, { nullable: true })
-  deletedAt: Date | null;
 }
