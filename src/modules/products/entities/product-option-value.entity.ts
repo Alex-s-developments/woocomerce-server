@@ -1,21 +1,14 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { BaseEntity } from 'src/shared/entities/base.entity';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { ProductOptionEntity } from './product-option.entity';
 import { ProductSkuValueEntity } from './product-sku-value.entity';
 
 @Entity('product_option_value')
-export class ProductOptionValueEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+@ObjectType('ProductOptionValue')
+export class ProductOptionValueEntity extends BaseEntity {
   @Column()
+  @Field(() => String)
   value: string;
 
   @ManyToOne(() => ProductOptionEntity, (option) => option.values)
@@ -23,13 +16,4 @@ export class ProductOptionValueEntity {
 
   @OneToMany(() => ProductSkuValueEntity, (skuValue) => skuValue.option)
   skuValues: ProductSkuValueEntity[];
-
-  @Column({ type: 'timestamp', nullable: true })
-  deletedAt: Date;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

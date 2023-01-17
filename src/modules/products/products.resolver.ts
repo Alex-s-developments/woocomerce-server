@@ -1,37 +1,49 @@
-import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ID,
+  ResolveField,
+  Root,
+} from '@nestjs/graphql';
 import { ProductsService } from './products.service';
-import { ProductsListType, ProductType } from './typeDefs/product.type';
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
 import { GetProductsListArgs } from './dto/get-products-list.args';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { SuccessType } from 'src/shared/typeDefs/success.type';
+import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
+import { ProductEntity } from './entities/product.entity';
+import { ProductsListTypeDef as ProductsList } from './typeDefs/products-list.typeDef';
+import { ProductOptionEntity } from './entities/product-option.entity';
 
-@Resolver(() => ProductType)
+@Resolver(() => ProductEntity)
 export class ProductsResolver {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Mutation(() => ProductType)
-  createProduct(
-    @Args('input') input: CreateProductInput,
-  ): Promise<ProductType> {
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => ProductEntity)
+  createProduct(@Args('input') input: CreateProductInput) {
     return this.productsService.create(input);
   }
 
-  @Query(() => ProductsListType, { name: 'productsList' })
-  async findAll(@Args() args: GetProductsListArgs): Promise<ProductsListType> {
+  @UseGuards(GqlAuthGuard)
+  @Query(() => ProductsList, { name: 'productsList' })
+  async findAll(@Args() args: GetProductsListArgs): Promise<ProductsList> {
     const [items, count] = await Promise.all([
       this.productsService.findAll(args),
       this.productsService.count(),
     ]);
 
-    return new ProductsListType({
+    return new ProductsList({
       items,
       count,
     });
   }
 
-  @Query(() => ProductType, { name: 'product', nullable: true })
+  @UseGuards(GqlAuthGuard)
+  @Query(() => ProductEntity, { name: 'product', nullable: true })
   async findOne(@Args('id', { type: () => ID }) id: number) {
     const product = await this.productsService.findOne(id);
 
@@ -41,10 +53,11 @@ export class ProductsResolver {
     return product;
   }
 
-  @Mutation(() => ProductType)
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => ProductEntity)
   async updateProduct(
     @Args('input') input: UpdateProductInput,
-  ): Promise<ProductType> {
+  ): Promise<ProductEntity> {
     const product = await this.productsService.findOne(input.id);
 
     if (!product)
@@ -55,6 +68,7 @@ export class ProductsResolver {
     return updatedProduct;
   }
 
+  @UseGuards(GqlAuthGuard)
   @Mutation(() => SuccessType)
   async removeProduct(
     @Args('id', { type: () => ID }) id: number,
@@ -69,5 +83,11 @@ export class ProductsResolver {
     return {
       success: isDeleted,
     };
+  }
+
+  @ResolveField(() => [ProductOptionEntity], { name: 'optionsListRelation' })
+  async findOptions(@Root() product: ProductEntity) {
+    const options = await this.productsService.findOptions(product.id);
+    return options;
   }
 }

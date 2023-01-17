@@ -6,14 +6,20 @@ import {
 } from './dto/create-product.input';
 import { GetProductsListArgs } from './dto/get-products-list.args';
 import { UpdateProductInput } from './dto/update-product.input';
+import { ProductOptionEntity } from './entities/product-option.entity';
 import { ProductEntity } from './entities/product.entity';
-import { PRODUCT_REPOSITORY } from './product.constants';
+import {
+  PRODUCT_OPTION_REPOSITORY,
+  PRODUCT_REPOSITORY,
+} from './product.constants';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private productRepo: Repository<ProductEntity>,
+    @Inject(PRODUCT_OPTION_REPOSITORY)
+    private productOptionRepo: Repository<ProductOptionEntity>,
   ) {}
 
   async create(input: CreateProductInput) {
@@ -62,5 +68,12 @@ export class ProductsService {
     );
     const isDeleted = Boolean(result.affected);
     return isDeleted;
+  }
+
+  async findOptions(productId: number) {
+    const options = await this.productOptionRepo.find({
+      where: { product: { id: productId } },
+    });
+    return options;
   }
 }

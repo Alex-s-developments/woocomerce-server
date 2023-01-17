@@ -1,25 +1,20 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
-import { IProduct } from '../interfaces/Product';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { BaseEntity } from 'src/shared/entities/base.entity';
+import { IProduct } from '../interfaces/product.interface';
 import { ProductOptionEntity } from './product-option.entity';
 import { ProductSkuValueEntity } from './product-sku-value.entity';
 import { ProductSkuEntity } from './product-sku.entity';
 
 @Entity({ name: 'product' })
-export class ProductEntity implements IProduct {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+@ObjectType('Product')
+export class ProductEntity extends BaseEntity implements IProduct {
   @Column()
+  @Field(() => String, { description: 'product name' })
   name: string;
 
   @OneToMany(() => ProductOptionEntity, (option) => option.product)
+  @Field(() => ProductOptionEntity, { name: 'optionsListRelation' })
   options: ProductOptionEntity[];
 
   @OneToMany(() => ProductSkuEntity, (sku) => sku.product)
@@ -27,13 +22,4 @@ export class ProductEntity implements IProduct {
 
   @OneToMany(() => ProductSkuValueEntity, (val) => val.product)
   skuValues: ProductSkuValueEntity[];
-
-  @Column({ type: 'timestamp', nullable: true })
-  deletedAt: Date;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }
