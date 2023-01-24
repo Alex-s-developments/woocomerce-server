@@ -1,6 +1,7 @@
 import { ObjectType } from '@nestjs/graphql';
 import { BaseEntity } from 'src/shared/entities/base.entity';
 import { ManyToOne, Entity } from 'typeorm';
+import { IProductSkuValue } from '../interfaces/product-sku-value.interface';
 import { ProductOptionValueEntity } from './product-option-value.entity';
 import { ProductOptionEntity } from './product-option.entity';
 import { ProductSkuEntity } from './product-sku.entity';
@@ -8,7 +9,10 @@ import { ProductEntity } from './product.entity';
 
 @Entity('product_sku_value')
 @ObjectType('ProductSkuValue')
-export class ProductSkuValueEntity extends BaseEntity {
+export class ProductSkuValueEntity
+  extends BaseEntity
+  implements IProductSkuValue
+{
   @ManyToOne(() => ProductEntity, (product) => product.skuValues)
   product: ProductEntity;
 

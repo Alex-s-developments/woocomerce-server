@@ -1,6 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
+import { Repository } from 'typeorm';
+import { UserEntity } from '../users/entities/user.entity';
+import { IUser } from '../users/interfaces/user.interface';
+import { USER_REPOSITORY } from '../users/users.constants';
+import { comparePassword } from '../users/users.utils';
 import { JWT_SECRET_KEY } from './auth.constants';
 import { AuthenticatedDto } from './dto/authenticated.dto';
 // import { IJwtPayload } from './interfaces/jwt-payload.interface';
@@ -10,21 +14,29 @@ export class AuthService {
   private jwtSecret = JWT_SECRET_KEY;
 
   constructor(
-    private usersService: UsersService,
+    @Inject(USER_REPOSITORY)
+    private usersRepo: Repository<UserEntity>,
     private jwtService: JwtService,
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findOneByUsername(username);
-    if (user && user.password === pass) {
-      const { _password, ...result } = user;
-      return result;
+    const user = await this.usersRepo.findOne({
+      where: { username },
+      select: ['id', 'username', 'password'],
+    });
+    if (!user) {
+      throw new UnauthorizedException(undefined, 'user not exist');
     }
-    return null;
+
+    const isValidPass = await comparePassword(pass, user.password);
+    if (!isValidPass)
+      throw new UnauthorizedException(undefined, 'password invalid');
+
+    return user;
   }
 
-  async login(user: any) {
-    const payload = { username: user.username, sub: user.userId };
+  async login(user: IUser) {
+    const payload = { username: user.username, sub: user.id };
     const authenticated = new AuthenticatedDto();
     authenticated.accessToken = this.jwtService.sign(payload, {
       expiresIn: '8h',

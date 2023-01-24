@@ -1,4 +1,4 @@
-import { CreateShopInput } from './create-shop.input';
+import { CreateShopInput } from '../inputs/create-shop.input';
 import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
 
 @InputType()

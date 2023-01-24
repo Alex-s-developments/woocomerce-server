@@ -1,6 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
+import {
+  CreateUserInput,
+  mapCreateUserInputToUser,
+} from './inputs/create-user.input';
 import { USER_REPOSITORY } from './users.constants';
 
 export type User = any;
@@ -12,25 +16,28 @@ export class UsersService {
     private usersRepo: Repository<UserEntity>,
   ) {}
 
-  private readonly users = [
-    {
-      userId: 1,
-      username: 'john',
-      password: 'changeme',
-    },
-    {
-      userId: 2,
-      username: 'maria',
-      password: 'guess',
-    },
-  ];
+  async findOneByUsername(username: string) {
+    const user = await this.usersRepo.findOneBy({ username });
+    return user;
+  }
 
-  async findOneByUsername(username: string): Promise<User | undefined> {
-    console.log('username', username);
-    return this.users.find((user) => user.username === username);
+  async findOneByShopId(shopId: number) {
+    const user = await this.usersRepo.findOne({
+      where: {
+        shops: { id: shopId },
+      },
+    });
+    return user;
   }
 
   async findOne(id: number) {
     return this.usersRepo.findOneBy({ id });
+  }
+
+  async create(input: CreateUserInput) {
+    const user = mapCreateUserInputToUser(input);
+    const result = await this.usersRepo.insert(user);
+    user.id = result.identifiers[0].id;
+    return user;
   }
 }
